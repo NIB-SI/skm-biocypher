@@ -1,0 +1,3 @@
+[submodule "skm-neo4j"]
+	path = skm-neo4j
+	url = git@github.com:NIB-SI/skm-neo4j.git
