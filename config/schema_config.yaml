@@ -1,21 +1,511 @@
-# add your desired knowledge graph components here
+#---
+# TODO
+#---
 
-protein:
-    represented_as: node
-    preferred_id: uniprot
-    input_label: uniprot_protein
+# https://bioportal.bioontology.org/ontologies/PLANTSO/
+# https://bioportal.bioontology.org/ontologies/PO
 
-disease:
-    represented_as: node
-    preferred_id: doid
-    input_label: do_disease
 
-protein interaction:
+#---
+# Nodes (SKM labels & entities)
+#---
+
+# Complex
+complex:
+  synonym_for: macromolecular complex # BioLink
+  represented_as: node
+  input_label: complex
+  properties:
+    name: str
+    description: str
+
+# Condition
+# TODO
+
+# DeprecatedReaction
+# SKIP
+
+# Family
+gene family: # BioLink
+  represented_as: node
+  input_label: gene_family
+  properties:
+    name: str
+    description: str
+
+# Foreign
+# SKIP
+
+# ForeignAbiotic
+environmental process: # BioLink
+  represented_as: node
+  input_label: environmental_process
+  properties:
+    name: str
+    description: str
+
+# ForeignAbstract
+
+
+# ForeignCoding
+foreign gene:
+  is_a: gene # BioLink
+  represented_as: node
+  input_label: foreign_gene
+  properties:
+    name: str
+    description: str
+
+# ForeignEntity
+
+virus: # BioLink
+  represented_as: node
+  input_label: virus
+  preferred_id: ncbitaxon
+  properties:
+    name: str
+    description: str
+
+bacterium: # BioLink
+  is_a: cellular organism TODO
+  represented_as: node
+  input_label: bacteria
+  preferred_id: ncbitaxon
+  properties:
+    name: str
+    description: str
+
+oomycete:
+  is_a: cellular organism # BioLink
+  input_label: oomycete
+  preferred_id: ncbitaxon
+  properties:
+    name: str
+    description: str
+
+# ForeignNonCoding
+# TODO (double stranded RNA, precursor to biolink:siRNA)
+
+# FunctionalCluster
+# --> See gene to gene homology association
+
+functional cluster:
+  is_a: gene family # BioLink
+  represented_as: node
+  input_label: functional_cluster
+  properties:
+    name: str
+    description: str
+    additional_information: str
+    url: str
+
+gene:
+  represented_as: node
+  input_label: gene
+  preferred_id: tair
+  properties:
+    name: str
+    description: str
+    synonyms: str[]
+    gomapman_annotations: str[]
+    species: str
+    taxon: str
+    type: str
+    url: str
+    tair: str
+
+# Metabolite
+metabolite:
+  synonym_for: small molecule # BioLink
+  represented_as: node
+  input_label: metabolite
+  preferred_id: chebi
+  properties:
+    name: str
+    description: str
+
+
+# MetaboliteFamily
+# SKIP
+
+# Node
+# SKIP
+
+# Plant
+
+# # --> See gene to gene homology association
+
+
+# # TODO gene or gene product
+# # plant gene:
+# #     represented_as: node
+# #     preferred_id: tair
+# #     properties:
+# #         name: str
+
+# plant: # BioLink
+#   is_a: cellular organism
+#   represented_as: node
+#   preferred_id: ncbitaxon
+#   properties:
+#     name: str
+#     description: str
+
+# # PlantAbstract
+
+# unidentified gene or gene product:
+#     is_a: gene
+#     represented_as: node
+
+
+# # PlantCoding
+
+# protein: # BioLink
+#     represented_as: node
+#     preferred_id: tair
+
+# transcription factor:
+#     is_a: protein
+#     represented_as: node
+#     preferred_id: hgnc.symbol
+#     properties:
+#         name: str
+#         category: str
+
+
+# # # PlantNonCoding
+
+# noncoding RNA product: # BioLink TODO
+#   is_a: RNA product
+#   represented_as: node
+#   input_label: noncoding
+#   properties:
+#     name: str
+#     description: str
+
+# # microRNA: # BioLink
+
+
+# # siRNA: # BioLink
+
+# # Process
+biological process: # BioLink
+  represented_as: node
+  input_label: biological_process
+  properties:
+    name: str
+    description: str
+
+# # Reaction
+
+# reaction:
+#     is_a: macromolecular activity
+#     represented_as: node
+#     preferred_id:
+#     properties:
+#         name:
+#         description:
+
+
+#---
+# Nodes (Additional Entities)
+#---
+
+# publication:
+#   represented_as: node
+#   preferred_id: doi
+#   input_label: Publication
+#   properties:
+#     DOI: str
+#     linkout: str
+
+# cellular component:
+#   represented_as: node
+#   preferred_id: go
+#   input_label: Cellular_component
+#   properties:
+#     name: str
+#     description: str
+
+
+pathway: #Biolink
+  represented_as: node
+  input_label: pathway
+  properties:
+    name: str
+    description: str
+
+# # Associations
+
+# gene to gene homology association
+
+gene to organism:
+  is_a: gene to entity association mixin # Biolink
+  represented_as: edge
+  # source: organismal entity
+  # target: gene
+  input_label: gene_of
+
+gene belongs to functional cluster:
+  is_a: gene to gene family association
+  represented_as: edge
+  # source: functional cluster
+  # target: gene
+  input_label: functional_cluster_member
+
+
+# reactions
+
+# ---
+# Binding
+# ---
+protein protein interaction:
+  is_a: pairwise molecular interaction
+  represented_as: edge
+  # source: functional cluster
+  # target: functional cluster
+  input_label: protein_protein_interaction
+  properties:
+    reaction_identifier: str
+    url: str
+    references: str[]
+
+subunit to complex:
+  is_a: pairwise molecular interaction
+  represented_as: edge
+  # source:
+  #   - complex
+  #   - metabolite
+  #   - functional cluster
+  #   - foreign gene
+  # target: complex
+  input_label: complex_subunits
+  properties:
+    reaction_identifier: str
+    url: str
+    references: str[]
+
+complex formation catalyst to complex:
+  is_a: pairwise molecular interaction
+  represented_as: edge
+  # source:
+  #   - complex
+  #   - metabolite
+  #   - functional cluster
+  #   - foreign gene
+  # target: complex
+  input_label: complex_formation_catalyst
+  properties:
+    reaction_identifier: str
+    url: str
+    references: str[]
+
+
+# ---
+# Dissociation
+# ---
+complex to dissociation product:
+  is_a: chemical to chemical derivation association  # BioLink
+  represented_as: edge
+  # source: complex
+  # target:
+  #   - metabolite
+  #   - functional cluster
+  #   - complex
+  input_label: dissociation_product
+  properties:
+    reaction_identifier: str
+    url: str
+    references: str[]
+
+catalyst to dissociation target:
+  is_a: pairwise molecular interaction  # BioLink
+  represented_as: edge
+  # source:
+  #   - metabolite
+  #   - functional cluster
+  #   - complex
+  # target: complex
+  input_label: dissociation_catalyst
+  properties:
+    reaction_identifier: str
+    url: str
+    references: str[]
+
+
+# ---
+# Catalysis
+# ---
+metabolite to downstream metabolite:
+  synonym_for: chemical to chemical derivation association  # BioLink
+  represented_as: edge
+  # source: metabolite
+  # target: metabolite
+  input_label: downstream_metabolite
+  properties:
+    reaction_identifier: str
+    url: str
+    references: str[]
+
+enzyme to substrate:
+  is_a: gene affects chemical association
+  represented_as: edge
+  # source:
+  #   - complex
+  #   - functional cluster
+  # target: metabolite
+  input_label: enzyme_substrate
+  properties:
+    reaction_identifier: str
+    url: str
+    references: str[]
+
+enzyme to product:
+  is_a: gene affects chemical association
+  represented_as: edge
+  # source:
+  #   - complex
+  #   - functional cluster
+  # target: metabolite
+  input_label: enzyme_product
+  properties:
+    reaction_identifier: str
+    url: str
+    references: str[]
+
+
+# ---
+# Transport
+# ---
+transport protein to substrate:
+  is_a: gene affects chemical association
+  represented_as: edge
+  # source:
+  #   - complex
+  #   - functional cluster
+  # target: metabolite
+  input_label: transport_substrate
+  properties:
+    reaction_identifier: str
+    url: str
+    references: str[]
+
+# ---
+# Degradation
+#n ---
+catalyst to degradation target:
+  is_a: gene affects chemical association
+  represented_as: edge
+  # source:
+  #   - complex
+  #   - functional cluster
+  # target: metabolite
+  input_label: enzyme_degradation
+  properties:
+    reaction_identifier: str
+    url: str
+    references: str[]
+
+
+# ---
+# Protein activation
+# ---
+protein activation:
     is_a: pairwise molecular interaction
     represented_as: edge
-    input_label: protein_protein_interaction
+    # source:
+    #   - metabolite
+    #   - functional cluster
+    #   - complex
+    # target: functional cluster
+    input_label: protein_activation
+    properties:
+      reaction_identifier: str
+      url: str
+      references: str[]
 
-protein to disease association:
-    is_a: association
+# ---
+# Protein inhibition
+# ---
+protein inhibition:
+    is_a: pairwise molecular interaction
     represented_as: edge
-    input_label: protein_disease_association
+    # source:
+    #   - metabolite
+    #   - functional cluster
+    #   - complex
+    # target: functional cluster
+    input_label: protein_inhibition
+    properties:
+      reaction_identifier: str
+      url: str
+      references: str[]
+
+
+# ---
+# Transcriptional activation
+# ---
+transcriptional activation:
+    is_a: pairwise molecular interaction
+    represented_as: edge
+    # source:
+    #   - functional cluster
+    #   - complex
+    # target: functional cluster
+    input_label: transcriptional_activation
+    properties:
+      reaction_identifier: str
+      url: str
+      references: str[]
+      causal_mechanism: str
+
+# ---
+# Transcriptional inhibition
+# ---
+transcriptional inhibition:
+    is_a: pairwise molecular interaction # TODO gene regulates gene association
+    represented_as: edge
+    # source:
+    #   - functional cluster
+    #   - complex
+    # target: functional cluster
+    input_label: transcriptional_inhibition
+    properties:
+      reaction_identifier: str
+      url: str
+      references: str[]
+      causal_mechanism: str
+
+#---
+# Other associations
+#---
+
+in pathway:
+  is_a: association
+  represented_as: edge
+  # source:
+  #   - metabolite
+  #   - functional cluster
+  #   - complex
+  #   - foreign gene
+  #   - cellular organism
+  # target: pathway
+  input_label: in_pathway
+
+#---
+# Other associations TODO
+#---
+
+# catalyzes:
+#     is_a:
+#     represented_as: edge
+#     source: protein
+#     target:
+
+# chemical to chemical derivation association:
+
+# gene to article association:
+#   is_a: information content entity to named thing association
+#   represented_as: edge
+#   input_label:
+

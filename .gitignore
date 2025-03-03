@@ -2,6 +2,8 @@
 biocypher-*
 .vscode
 
+poetry.lock
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -113,6 +115,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+app.env
 
 # Spyder project settings
 .spyderproject

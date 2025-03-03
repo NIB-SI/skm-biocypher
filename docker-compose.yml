@@ -1,6 +1,24 @@
-version: '3.3'
-
 services:
+
+  pss:
+    build:
+      context: ./skm-neo4j
+    env_file:
+      - ./skm-neo4j/.env
+    volumes:
+      - ./skm-neo4j/neo4j_db/logs:/logs
+      - ./skm-neo4j/neo4j_db/conf:/conf
+      - ./skm-neo4j/neo4j_db/data/db:/data
+      - ./skm-neo4j/neo4j_db/plugins:/plugins
+    ports:
+      - "7475:7474"
+      - "7688:7687"
+    healthcheck:
+      test: wget http://localhost:7687 || exit 1
+      interval: 1s
+      timeout: 10s
+      retries: 20
+      start_period: 3s
 
   build:
     image: biocypher/base:1.2.0
@@ -11,6 +29,9 @@ services:
     command:
       - /bin/bash
       - /src/scripts/build.sh
+    depends_on:
+      pss:
+        condition: service_healthy
 
   import:
     image: neo4j:4.4-enterprise
@@ -22,6 +43,7 @@ services:
     volumes:
       - biocypher_neo4j_volume:/data
       - ./scripts/import.sh:/scripts/import.sh
+      - ./biocypher-log/import.report:/var/lib/neo4j/import.report
     command:
       - /bin/bash
       - /scripts/import.sh
@@ -45,5 +67,24 @@ services:
       import:
         condition: service_completed_successfully
 
+  biochatter:
+    image: biocypher/biochatter-light:0.6.10
+    container_name: biochatter
+    ports:
+      - "8501:8501"
+    networks:
+      - default
+    depends_on:
+      - deploy
+    env_file: "app.env"
+    environment:
+      - DOCKER_COMPOSE=true
+      - CHAT_TAB=false
+      - PROMPT_ENGINEERING_TAB=false
+      - RAG_TAB=false
+      - CORRECTING_AGENT_TAB=false
+      - KNOWLEDGE_GRAPH_TAB=true
+
 volumes:
   biocypher_neo4j_volume:
+

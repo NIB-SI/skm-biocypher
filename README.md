@@ -1,58 +1,102 @@
-# BioCypher project template
+# PSS-BioCypher and BioChatter
 
-A quick way to set up a BioCypher-driven knowledge graph pipeline. Please make
-sure to refer to the [Usage](#-usage) section for details on how it works.
+For development with a local PSS neo4j database, `skm-neo4j` is provided as a git submodule. 
 
-## Using the GitHub Template functionality
 
-You can use this template in GitHub directly. Just select 
-`biocypher/project-template` as your template when creating a new repository
-on GitHub.
-
-## ⚙️ Installation (local, for docker see below)
-
-> [!NOTE]
-> These are manual installation instructions. If you created the repository
-> using the above GitHub template functionality, you don't need to do the
-> first two steps. Instead, just clone the repository you have created.
-
-1. Clone this repository and rename to your project name.
-```{bash}
-git clone https://github.com/biocypher/project-template.git
-mv project-template my-project
-cd my-project
+```bash
+git clone --recurse-submodules git@github.com:NIB-SI/skm-biocypher.git
 ```
-2. Make the repository your own.
-```{bash}
-rm -rf .git
-git init
-git add .
-git commit -m "Initial commit"
-# (you can add your remote repository here)
-```
-3. Install the dependencies using [Poetry](https://python-poetry.org/). (Or feel
-free to use your own dependency management system. We provide a `pyproject.toml`
-to define dependencies.)
-```{bash}
-poetry install
-```
-4. You are ready to go!
-```{bash}
-poetry shell
-python create_knowledge_graph.py
-```
+
+
+Two environmental file need to be prepared:
+
+1. PSS .env file
+ ```bash
+ mv skm-neo4j/.env.example skm-neo4j/.env
+ ```
+ This can be left as is with defaults. 
+
+
+2. BioChatter app env file
+ ```bash
+ mv app.env.example app.env
+ ```
+To use BioChatter, this file needs to contain a valid `OPENAI_API_KEY`.
 
 ## 🛠 Usage
 
+###
+
+__To bring up PSS__
+
+```bash
+docker compose up pss
+```
+
+Go to http://localhost:7475/browser/
+
+__To bring up PSS-BioCypher__
+
+```bash
+docker compose up deploy
+```
+
+Go to http://localhost:7474/browser/
+
+__To bring up BioChatter__
+
+```bash
+docker compose up biochatter
+```
+
+Go to: http://localhost:8501/
+
+
+__Notebooks__
+
+To run the notebook locally, you can use poetry to install the dependencies:
+```bash
+poetry install
+```
+
+Deploy `jupyter lab` using:
+
+```bash
+poetry run jupyter lab
+```
+
+The notebook is in the folder `notebooks`. 
+
+### Development notes
+
+To prevent multiple edge in the PSS-BioCypher graph in the case of running  `build` and `import` multiple times, the following will clear out the edge and node tables:
+
+```bash 
+docker run -it -v skm-biocypher_biocypher_neo4j_volume:/data \
+neo4j:4.4-enterprise sh -c "rm /data/build2neo/*.csv"
+```
+
+If PSS-BioCypher is already populated, `build` and `import` steps can be avoided by running 
+
+```bash
+docker compose up deploy --no-deps
+```
+
+
 ### Structure
-The project template is structured as follows:
+The project is structured as follows:
 ```
 .
 │  # Project setup
 │
 ├── LICENSE
 ├── README.md
+├── docs
 ├── pyproject.toml
+│
+│  # PSS submodule
+│
+├── skm_neo4j
 │
 │  # Docker setup
 │
@@ -71,28 +115,17 @@ The project template is structured as follows:
 │   ├── biocypher_config.yaml
 │   ├── biocypher_docker_config.yaml
 │   └── schema_config.yaml
-└── template_package
-    └── adapters
-        └── example_adapter.py
+├── skm
+│    └── adapters
+│        └── pss_adapter.py
+│
+│
+└── notebooks
 ```
 
 The main components of the BioCypher pipeline are the
 `create_knowledge_graph.py`, the configuration in the `config` directory, and
-the adapter module in the `template_package` directory. The latter can be used
-to publish your own adapters (see below). You can also use other adapters from
-anywhere on GitHub, PyPI, or your local machine.
-
-**The BioCypher ecosystem relies on the collection of adapters (planned, in
-development, or already available) to inform the community about the available
-data sources and to facilitate the creation of knowledge graphs. If you think
-your adapter could be useful for others, please create an issue for it on the
-[main BioCypher repository](https://github.com/biocypher/biocypher/issues).**
-
-In addition, the docker setup is provided to run the pipeline (from the same
-python script) in a docker container, and subsequently load the knowledge graph
-into a Neo4j instance (also from a docker container). This is useful if you want
-to run the pipeline on a server, or if you want to run it in a reproducible
-environment.
+the adapter module in the `skm` directory. 
 
 ### Running the pipeline
 
@@ -126,32 +159,6 @@ tutorial](https://biocypher.org/tutorial-ontology.html)).
 directory) that defines some BioCypher parameters, such as the mode, the 
 separators used, and other options. More on its use can be found in the
 [Documentation](https://biocypher.org/installation.html#configuration).
-
-### Publishing your own adapters
-
-After adding your adapter(s) to the `adapters` directory, you may want to
-publish them for easier reuse. To create a package to distribute your own
-adapter(s), we recommend using [Poetry](https://python-poetry.org/). Poetry,
-after setup, allows you to publish your package to PyPI using few simple
-commands. To set up your package, rename the `template_package` directory to
-your desired package name and update the `pyproject.toml` file accordingly. Most
-importantly, update the `name`,`author`, and `version` fields. You can also add
-a `description` and a `license`.  Then, you can publish your package to PyPI
-using the following commands:
-
-```{bash}
-poetry build
-poetry publish
-```
-
-If you don't want to publish your package to PyPI, you can also install it from
-GitHub using the respective functions of poetry or pip.
-
-### Further reading / code
-
-If you want to see a second example of the workflow, check our
-[CollecTRI](https://github.com/biocypher/collectri) pipeline. Its README describes
-the process of data assessment and adapter creation in more detail.
 
 ## 🐳 Docker
 
